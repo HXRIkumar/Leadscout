@@ -134,6 +134,25 @@ def companies(all_: bool = typer.Option(False, "--all", help="Include disqualifi
 
 
 @app.command()
+def rank(all_: bool = typer.Option(False, "--all", help="Include disqualified")) -> None:
+    """rank — briefed companies by explainable opportunity score, highest first."""
+    from .rank import ranked_opportunities
+    rows = ranked_opportunities(include_disqualified=all_)
+    if not rows:
+        console.print("[yellow]No scored companies yet. Run `leadscout brief <url>` first.[/yellow]")
+        return
+    t = Table(title=f"Ranked opportunities ({len(rows)})")
+    t.add_column("score", justify="right")
+    t.add_column("domain", style="cyan")
+    t.add_column("name")
+    t.add_column("readiness")
+    t.add_column("value band")
+    for r in rows:
+        t.add_row(str(r.score), r.domain, (r.name or "")[:28], r.readiness, r.value_band)
+    console.print(t)
+
+
+@app.command()
 def budget() -> None:
     """Show budget guard counters (frontier ₹, Groq/day, Hunter/mo)."""
     from .llm.budget import BudgetGuard

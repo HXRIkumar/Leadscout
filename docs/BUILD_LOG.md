@@ -185,3 +185,13 @@ Live-verified: Gorgias detected on gorgias.com; recall caveat recorded (JS-injec
 widgets need the B7 browser fallback). +3 tests.
 
 Tests 57/57, ruff clean.
+
+**Improvement #3 — opportunity scoring + ranking (B5 activated).**
+`intelligence.scorer.opportunity_score` wires the reserved V1 fixed-weight formula
+into the flow (operator-directed for the lead-gen goal): explainable 0-100 score with
+factor breakdown + §14 value band by archetype; disqualified → 0. Each `brief` run now
+persists a `Score` row and renders an "Opportunity score" section. New `leadscout rank`
+command orders briefed companies by score (latest per domain), hides disqualified.
+Live: plausible.io 73 > tailscale.com 68, both high readiness. +3 tests.
+
+Tests 60/60, ruff clean.

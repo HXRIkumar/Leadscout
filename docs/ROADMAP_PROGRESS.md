@@ -26,7 +26,7 @@ Legend: ✅ done · 🟡 partial · 🌱 seam/stub only · ⛔ reserved (trigger
 | B2 Proposal Generator | 🌱 `proposals` table + template | After First Client |
 | B3 Case Study Engine | ⛔ | After First Client |
 | B4 Discovery-Call Assistant | 🌱 `call_notes.md`, interactions table | After First Client |
-| B5 Lead Scoring | 🌱 `scores` table + `FixedWeightScorer` seed (disabled) | Pool >200 / Phase 3 |
+| B5 Lead Scoring | ✅ **activated** — `opportunity_score` + `leadscout rank` (explainable, deterministic, cited); persisted `Score` per brief. C5 reweighting from outcomes still deferred | (activated early per lead-gen goal) |
 | B6 Buying-Trigger Monitor (EDGAR) | 🌱 `sources/edgar.py` stub | Phase 2 |
 | B7 Browser Agent (Playwright) | 🟡 | **single fallback function LIVE** (`research/browser.py`, default-off via `USE_BROWSER_FALLBACK`, wired into `polite_fetch` for thin/JS pages, dependency-guarded). Deeper agentic: After First Client |
 | B8 Follow-up sequencing | 🌱 crm constants | After First Client |

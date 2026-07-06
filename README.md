@@ -54,6 +54,7 @@ The full loop (Category A) is live:
 | `leadscout scout` / `add` / `companies` | Discovery Lite: candidate list (HN/YC + manual) (A2) |
 | `leadscout warm` / `warm-add` / `warm-import` | Warm-network reactivation + import (A8) |
 | `leadscout promote` / `advance` / `pipeline` | CRM-lite: lead lifecycle + follow-ups digest (A10) |
+| `leadscout rank` | Rank briefed companies by explainable opportunity score (B5) |
 | `leadscout capture` | Sync the pattern library into the DB (A11 substrate) |
 | `leadscout kernel` / `budget` / `initdb` | Show the kernel · budget counters · init the DB |
 

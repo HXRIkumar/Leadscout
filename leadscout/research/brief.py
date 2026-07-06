@@ -7,14 +7,16 @@ verified signals, and the brief to SQLite, and writes data/companies/<domain>/br
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from ..db import init_db, session_scope
 from ..diagnose import CostEstimate, Diagnosis, diagnose, estimate_cost
+from ..intelligence.scorer import ScoreResult, opportunity_score
 from ..kernel import Kernel, load_kernel
 from ..logging import RunLog, get_logger
-from ..models import Artifact, Brief, Company, Signal
+from ..models import Artifact, Brief, Company, Score, Signal
 from .extract import SignalCandidate, extract_signals, verify_signals
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
 from .techstack import detect_widgets
@@ -30,6 +32,7 @@ class BriefResult:
     diagnosis: Diagnosis
     cost: CostEstimate
     signals: list[SignalCandidate]
+    score: ScoreResult | None = None
     pages: list[str] = field(default_factory=list)
     runlog: RunLog | None = None
 
@@ -74,24 +77,28 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     company_name = _company_name(domain, {})
     dx = diagnose(signals, kernel, company_name=company_name, cost=cost, use_llm=use_llm)
 
-    # 5) compose markdown
-    md = _compose_markdown(domain, company_name, kernel, dx, cost, signals, list(corpus.keys()), runlog)
+    # 5) opportunity score (explainable, deterministic) for triage/ranking
+    score = opportunity_score(signals, kernel.offer.archetype, disqualified=dx.disqualified)
+
+    # 6) compose markdown
+    md = _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, list(corpus.keys()), runlog)
     from ..config import get_settings
     brief_path = get_settings().data_path / "companies" / domain / "brief.md"
     brief_path.parent.mkdir(parents=True, exist_ok=True)
     brief_path.write_text(md, encoding="utf-8")
 
-    # 6) persist
-    _persist(domain, company_name, kernel, dx, cost, signals, results, str(brief_path))
+    # 7) persist
+    _persist(domain, company_name, kernel, dx, cost, score, signals, results, str(brief_path))
 
     runlog.write()
     return BriefResult(
         domain=domain, company_name=company_name, brief_path=str(brief_path),
-        diagnosis=dx, cost=cost, signals=signals, pages=list(corpus.keys()), runlog=runlog,
+        diagnosis=dx, cost=cost, signals=signals, score=score,
+        pages=list(corpus.keys()), runlog=runlog,
     )
 
 
-def _persist(domain, company_name, kernel, dx, cost, signals, results, brief_path) -> None:
+def _persist(domain, company_name, kernel, dx, cost, score, signals, results, brief_path) -> None:
     now = datetime.now(UTC)
     with session_scope() as s:
         company = s.get(Company, domain)
@@ -113,6 +120,13 @@ def _persist(domain, company_name, kernel, dx, cost, signals, results, brief_pat
             s.add(Artifact(domain=domain, source="site", url=r.url,
                            raw_path=str(raw_p), clean_text_path=str(txt_p), fetched_at=now))
 
+        # scores: keep one latest opportunity score per domain (for ranking)
+        for old_sc in s.query(Score).filter(Score.domain == domain).all():
+            s.delete(old_sc)
+        s.add(Score(domain=domain, total=score.total,
+                    factor_breakdown=json.dumps(score.factor_breakdown),
+                    estimated_value_band=score.estimated_value_band, scored_at=now))
+
         # signals: clear prior signals for this domain and rewrite verified set
         for old in s.query(Signal).filter(Signal.domain == domain).all():
             s.delete(old)
@@ -131,7 +145,7 @@ def _persist(domain, company_name, kernel, dx, cost, signals, results, brief_pat
         ))
 
 
-def _compose_markdown(domain, company_name, kernel, dx, cost, signals, pages, runlog) -> str:
+def _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, pages, runlog) -> str:
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     positives = [s for s in signals if not s.is_anti_signal]
     anti = [s for s in signals if s.is_anti_signal]
@@ -199,6 +213,15 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, signals, pages, ru
     if cost.evidence:
         for e in cost.evidence:
             lines.append(f"- Headcount evidence: “{e['quote']}” — <{e['source_url']}>")
+    lines.append("")
+
+    lines.append("## Opportunity score")
+    lines.append("")
+    band = f" · value band {score.estimated_value_band}" if score.estimated_value_band else ""
+    lines.append(f"**{score.total}/100**{band}")
+    if score.factor_breakdown:
+        lines.append("")
+        lines.append("- Factors: " + " · ".join(f"{k} {v:g}" for k, v in score.factor_breakdown.items()))
     lines.append("")
 
     if dx.matched_patterns:

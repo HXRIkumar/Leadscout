@@ -60,3 +60,24 @@ class FixedWeightScorer:
 
         total = int(round(min(100.0, sum(breakdown.values()))))
         return ScoreResult(total=total, factor_breakdown=breakdown)
+
+
+# Project value bands (SPEC §14) by demo archetype — startup / mid-market.
+_VALUE_BANDS = {
+    "rag_support_bot": "$5k–$20k (startup) / $25k–$75k (mid-market)",
+    "doc_extraction": "$7.5k–$25k / $30k–$100k",
+    "workflow_automation": "$3k–$20k / $25k–$100k",
+}
+
+
+def opportunity_score(
+    signals: list[SignalCandidate], archetype: str, *, disqualified: bool = False
+) -> ScoreResult:
+    """Explainable 0-100 opportunity score for triage/ranking. Deterministic, cited
+    via factor_breakdown. Disqualified companies score 0. Activated per the lead-gen
+    goal (the B5 seed formula, wired for ranking — C5 will reweight from outcomes)."""
+    if disqualified:
+        return ScoreResult(total=0, factor_breakdown={"disqualified": 0.0}, estimated_value_band="n/a — disqualified")
+    r = FixedWeightScorer().score(signals)
+    r.estimated_value_band = _VALUE_BANDS.get(archetype, "")
+    return r
