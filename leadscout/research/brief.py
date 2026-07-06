@@ -19,6 +19,7 @@ from ..logging import RunLog, get_logger
 from ..models import Artifact, Brief, Company, Score, Signal
 from .extract import SignalCandidate, extract_signals, verify_signals
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
+from .links import research_links
 from .techstack import detect_widgets
 
 log = get_logger(__name__)
@@ -254,6 +255,15 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, pa
         lines.append(f"- <{u}>")
     if not pages:
         lines.append("_No sources fetched._")
+    lines.append("")
+
+    lines.append("## Manual research (decision makers + restricted sources)")
+    lines.append("")
+    lines.append("_Open in a browser — compliant manual research only; LeadScout never "
+                 "scrapes these sources (SPEC §3.5/§7.7, decision D8)._")
+    lines.append("")
+    for label, url in research_links(domain, company_name).items():
+        lines.append(f"- [{label}]({url})")
     lines.append("")
 
     lines.append("---")

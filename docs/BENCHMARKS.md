@@ -54,6 +54,7 @@ server-rendered loaders; JS-injected widgets need `USE_BROWSER_FALLBACK` (B7).
 | + consultant-grade diagnosis | 54 | clean |
 | + tech-stack / widget detection | 57 | clean |
 | + opportunity scoring + ranking | 60 | clean |
+| + manual research link-outs | 62 | clean |
 
 _Method: runs are cache-first; live briefs use the on-disk fetch cache to stay polite
 (≥2s/domain, robots-honored). Numbers above are from plausible.io and tailscale.com,

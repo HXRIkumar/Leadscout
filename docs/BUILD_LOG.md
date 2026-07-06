@@ -195,3 +195,12 @@ command orders briefed companies by score (latest per domain), hides disqualifie
 Live: plausible.io 73 > tailscale.com 68, both high readiness. +3 tests.
 
 Tests 60/60, ruff clean.
+
+**Improvement #4 — manual-research link-outs (decision makers + restricted sources).**
+`research/links.py` builds pre-filled search URLs (LinkedIn company + decision makers,
+G2, Capterra, Crunchbase, Reddit, HN, Product Hunt, X, News) rendered in every brief.
+This is how D8 handles the restricted sources COMPLIANTLY — the operator opens them by
+hand; LeadScout never scrapes them (SPEC §3.5/§7.7). Pure string building, no network.
+Serves "discover decision makers" + "actionable outreach intelligence". +2 tests.
+
+Tests 62/62, ruff clean.
