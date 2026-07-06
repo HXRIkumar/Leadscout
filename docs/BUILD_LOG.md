@@ -137,3 +137,23 @@ router made this a config change, not a rewrite:
   `FRONTIER_MODEL=gpt-5-mini`.
 
 Tests still 44/44, ruff clean.
+
+## 2026-07-07 — Session 3: live-key testing + extraction→frontier routing
+
+**Live real-API test** (operator added keys): OpenAI `gpt-5-mini` + Groq both 200 OK;
+real briefs on plausible.io + tailscale.com + a 12-Q&A demo. Full session cost:
+frontier ₹1.32 / ₹1000. Findings + fixes:
+- **Bug (found live, fixed):** Groq mislabeled an "open source" quote as `ai_native`,
+  wrongly disqualifying a prospect. Added an anti-signal keyword gate in
+  `verify_signals` (`anti_signal_confirmed`) + 2 regression tests. (Shipped in 2188f4b.)
+- **Routing change (operator-directed):** moved **signal extraction to the frontier
+  tier** (`gpt-5-mini`) for max precision — one line: `"extraction"` moved from
+  `BULK_TASKS` to `FRONTIER_TASKS`. Groq/Gemini remain the free budget/error fallback.
+  Outreach + content polish kept on the free tier via a new `"polish"` bulk task
+  (draft.py, content.py). Budget guard confirmed: extraction now increments the
+  frontier ₹ meter and is gated by `frontier_ok()` (warn 80% / trip 100%).
+- **Test-isolation fix:** the real `.env` file leaked keys into tests (pydantic reads
+  the file, not just env vars). conftest now sets `Settings.model_config["env_file"]=None`
+  so tests control keys via env vars only.
+
+Tests 53/53, ruff clean.

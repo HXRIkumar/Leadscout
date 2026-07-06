@@ -104,7 +104,7 @@ def _llm_polish(post: str) -> str | None:
     )
     try:
         # content polish runs on the free tier ($0 marginal), not frontier
-        return llm_complete(prompt, task="extraction",
+        return llm_complete(prompt, task="polish",
                             system="You write sharp, credible, non-hypey posts for a technical audience.").text.strip()
     except NoLLMAvailable:
         return None

@@ -138,6 +138,6 @@ def _llm_polish(draft: str, anchor: Signal | None, footer: str) -> str | None:
     )
     try:
         # outreach polish runs on the free tier ($0 marginal per §4.1), not frontier
-        return llm_complete(prompt, task="extraction", system=load_prompt("writer")).text.strip()
+        return llm_complete(prompt, task="polish", system=load_prompt("writer")).text.strip()
     except NoLLMAvailable:
         return None

@@ -23,6 +23,10 @@ def temp_env(tmp_path, monkeypatch):
     # ensure no real keys leak in from the environment
     for k in ("GROQ_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
+    # ...and isolate from the real .env FILE (pydantic-settings would otherwise read it,
+    # re-introducing keys the tests deliberately unset). Tests control keys via env vars only.
+    from leadscout.config import Settings
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
 
     # reset cached singletons so the temp env takes effect
     from leadscout.config import get_settings

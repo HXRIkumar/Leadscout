@@ -1,9 +1,10 @@
 """LLM router (SPEC §4.1): one `llm_complete()` entry point.
 
 Routing policy (provider-agnostic — chosen by FRONTIER_PROVIDER, default OpenAI):
-- bulk (research / extraction, incl. outreach + content polish)  -> Groq (free) -> Gemini (free)
-- premium (diagnosis / demo generation / proposal / architecture) -> frontier (OpenAI by
-  default; Anthropic if FRONTIER_PROVIDER=anthropic), budget-capped -> free fallback
+- bulk (outreach + content polish)  -> Groq (free) -> Gemini (free)
+- premium (signal extraction / diagnosis / demo generation / proposal / architecture)
+  -> frontier (OpenAI by default; Anthropic if FRONTIER_PROVIDER=anthropic),
+  budget-capped, with Groq -> Gemini as the free budget/error fallback
 
 Cache-first (never pay twice). Budget-guarded (hard caps, warn at 80%). If no
 provider is usable (no keys / all failed / budget exhausted), raises
@@ -24,10 +25,13 @@ from .cache import get_cached, set_cached
 
 log = get_logger(__name__)
 
-BULK_TASKS = {"research", "extraction"}
-# Premium reasoning tasks routed to the frontier provider (OpenAI by default):
-# diagnosis, demo generation, proposal-quality reasoning, architecture suggestions.
-FRONTIER_TASKS = {"diagnosis", "demo", "proposal", "architecture"}
+# Bulk tasks stay on the free tier (Groq -> Gemini): light polish only.
+BULK_TASKS = {"research", "polish"}
+# Premium reasoning routed to the frontier provider (OpenAI by default), with the
+# free tier as budget/error fallback: diagnosis, demo generation, signal EXTRACTION
+# (moved here for max precision — cheap on gpt-5-mini at 30-50 companies/mo), plus
+# proposal-quality reasoning and architecture suggestions.
+FRONTIER_TASKS = {"diagnosis", "demo", "extraction", "proposal", "architecture"}
 
 
 class NoLLMAvailable(RuntimeError):

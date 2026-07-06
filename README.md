@@ -35,8 +35,8 @@ verbatim in the fetched text is dropped.
 
 | Tier | Provider (default) | Used for |
 |---|---|---|
-| Bulk (free) | **Groq** → **Gemini Flash-Lite** | research/extraction, outreach & content polish |
-| Frontier (paid, budget-capped) | **OpenAI** (`gpt-5-mini`) | diagnosis, demo generation, proposal/architecture reasoning |
+| Bulk (free) | **Groq** → **Gemini Flash-Lite** | outreach & content polish; free fallback for frontier |
+| Frontier (paid, budget-capped) | **OpenAI** (`gpt-5-mini`) | signal extraction, diagnosis, demo generation, proposal/architecture reasoning |
 
 The router is provider-agnostic. To switch the frontier provider back to Anthropic,
 set `FRONTIER_PROVIDER=anthropic` and `FRONTIER_MODEL=<claude model>` — no code change.

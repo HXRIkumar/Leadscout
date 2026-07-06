@@ -48,7 +48,7 @@ def test_frontier_routes_to_openai_gpt5_no_temperature(monkeypatch):
 
 
 @respx.mock
-def test_bulk_routes_to_groq_with_temperature(monkeypatch):
+def test_bulk_polish_routes_to_groq_with_temperature(monkeypatch):
     monkeypatch.setenv("GROQ_API_KEY", "gsk-test")
     get_settings.cache_clear()
     init_db()
@@ -58,10 +58,46 @@ def test_bulk_routes_to_groq_with_temperature(monkeypatch):
         "usage": {"prompt_tokens": 3, "completion_tokens": 1},
     }))
 
-    res = llm_complete("extract signals", task="extraction")
+    res = llm_complete("polish this", task="polish")   # polish = free bulk tier
     assert res.provider == "groq"
     body = json.loads(route.calls.last.request.content)
     assert body["temperature"] == 0        # non-reasoning model keeps deterministic temp
+
+
+@respx.mock
+def test_extraction_now_routes_to_frontier(monkeypatch):
+    # Extraction moved to the frontier tier for precision; OpenAI is tried first.
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("GROQ_API_KEY", "gsk-test")   # present as fallback, but not preferred
+    monkeypatch.setenv("FRONTIER_PROVIDER", "openai")
+    monkeypatch.setenv("FRONTIER_MODEL", "gpt-5-mini")
+    get_settings.cache_clear()
+    init_db()
+
+    respx.post(_OPENAI).mock(return_value=Response(200, json={
+        "choices": [{"message": {"content": "{\"signals\": []}"}}],
+        "usage": {"prompt_tokens": 20, "completion_tokens": 3},
+    }))
+
+    res = llm_complete("extract signals", task="extraction", json_mode=True)
+    assert res.provider == "openai"        # frontier first
+    assert res.model == "gpt-5-mini"
+
+
+@respx.mock
+def test_extraction_falls_back_to_groq_without_frontier_key(monkeypatch):
+    # No OpenAI key -> extraction falls back to the free Groq tier (still works).
+    monkeypatch.setenv("GROQ_API_KEY", "gsk-test")
+    get_settings.cache_clear()
+    init_db()
+
+    respx.post(_GROQ).mock(return_value=Response(200, json={
+        "choices": [{"message": {"content": "{\"signals\": []}"}}],
+        "usage": {"prompt_tokens": 5, "completion_tokens": 1},
+    }))
+
+    res = llm_complete("extract signals", task="extraction", json_mode=True)
+    assert res.provider == "groq"          # graceful free fallback
 
 
 @respx.mock
