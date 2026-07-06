@@ -57,3 +57,29 @@ Target (SPEC §5.4): ≥5 discovery calls, ≥1 signed pilot by week 8.
 
 Fixture-based (`respx` mocks httpx); no live calls in tests. Add a smoke test per new
 adapter/agent (SPEC §15). `uv run pytest -q` · `uv run ruff check leadscout tests`.
+
+## Lead-gen upgrade — status & remaining roadmap (Session 4, 2026-07-07)
+
+**Shipped this session (each: tested + live-verified + committed):**
+1. Consultant-grade diagnosis (summary, pains, AI/automation opportunities, ROI, complexity, recommended project, outreach angle, proposal outline)
+2. Tech-stack / support-widget detection from public HTML
+3. Opportunity scoring + `leadscout rank`
+4. Manual-research link-outs (decision makers + restricted sources, compliant)
+5. Documentation-quality scoring
+6. GitHub enrichment (official API)
+7. Search-based discovery adapter (`leadscout search`, Brave, keyed)
+
+**Remaining — with honest impact / blocker:**
+| Item | Status | Note |
+|---|---|---|
+| Search-based discovery | built, **needs SEARCH_API_KEY** (D9) | activates on key |
+| Similar-company / competitor expansion | not built | LLM-suggest + verify; leans *quantity* — deferred vs the goal's own "quality not quantity" + SPEC hand-fit thesis |
+| Product-launch / RSS / news feeds | partial (changelog signals) | incremental over existing `docs_lagging`; add feed parsing if inbound volume needs it |
+| Funding detection / SEC EDGAR (B6) | `funding_event` signal live; EDGAR reserved | SPEC gates EDGAR to Phase 2 (pipeline top-up) — don't build ahead of trigger |
+| LinkedIn / G2 / Capterra / Crunchbase / Reddit / Product Hunt (automated) | **never** (D8) | ToS / SPEC §3.5; shipped as manual link-outs instead |
+| C1 win/loss · C2 pricing · C3 patterns · C5 learned scoring | reserved | **need outcome data** — unlocked only by *operating* (run briefs → send → record wins/losses) |
+
+**Highest-leverage next action is operating, not building:** run `leadscout brief` on
+real prospects → `demo`/`draft` the best → record outcomes. That outcome data is the
+only thing that unlocks the genuinely next-most-valuable work (win/loss, price-to-win,
+cross-engagement pattern discovery) per the SPEC's trigger model.

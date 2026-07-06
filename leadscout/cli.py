@@ -119,6 +119,28 @@ def add(
 
 
 @app.command()
+def search(
+    query: str = typer.Argument(..., help="Niche query, e.g. 'B2B SaaS help center support hiring'"),
+    limit: int = typer.Option(20, help="Max results"),
+) -> None:
+    """search <query> — discover in-niche companies via web search (needs SEARCH_API_KEY)."""
+    from .sources.discovery import discover
+    from .sources.search import SearchSource
+    cands = discover(sources=[SearchSource(query)], limit=limit)
+    if not cands:
+        console.print("[yellow]No candidates. Set SEARCH_API_KEY (Brave) to enable search "
+                      "discovery, or the query returned only platforms/known companies.[/yellow]")
+        return
+    t = Table(title=f"Search discovery — {len(cands)} candidates")
+    t.add_column("domain", style="cyan")
+    t.add_column("name")
+    t.add_column("why")
+    for c in cands:
+        t.add_row(c.domain, c.name[:28], (c.description or "")[:48])
+    console.print(t)
+
+
+@app.command()
 def companies(all_: bool = typer.Option(False, "--all", help="Include disqualified")) -> None:
     """List candidate companies in the pipeline."""
     from .sources.discovery import list_candidates

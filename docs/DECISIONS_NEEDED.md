@@ -103,8 +103,20 @@ Legend: **Change cost** = how expensive it is to reverse later.
   paid, Reddit commercial), add it as a normal compliant adapter — the source
   interface is additive. Change cost: cheap per source.
 
+## D9 — Search-discovery API (NEEDS YOUR INPUT — sign-up + key)
+- **Question:** Which official web-search API powers `leadscout search`?
+- **Recommendation:** **Brave Search API** — compliant/ToS-permitted, free tier
+  ~2k queries/mo (~$3–5/1k after), no scraping. The adapter is **already built**
+  (`sources/search.py`) and activates the moment `SEARCH_API_KEY` is set.
+- **Alternatives:** SerpAPI (Google results, pricier); scraping Google/Bing directly
+  (ToS-violating — rejected). 
+- **Why:** search-based discovery finds in-niche companies compliantly; results are
+  candidates verified by `brief`, so nothing is fabricated.
+- **Change cost:** trivial — add `SEARCH_API_KEY` (swap the endpoint in
+  `sources/search.py` if you choose a different provider).
+
 ---
 
-_No item here blocked the build. D4 is the only one still requiring your personal
-knowledge (D7, D8 resolved). Bulk tiers (Groq/Gemini) remain the free primary path;
-OpenAI is used only for the ~30-50 curated frontier calls._
+_D4 (warm network) and D9 (search API key) need your input; both are non-blocking —
+the code is built and activates when you add the data/key. D7, D8 resolved. Bulk tiers
+(Groq/Gemini) remain the free primary path; OpenAI is the frontier for the curated calls._

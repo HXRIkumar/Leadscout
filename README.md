@@ -52,6 +52,7 @@ The full loop (Category A) is live:
 | `leadscout draft <domain>` | 1:1 outreach draft anchored on a verified fact + region compliance footer (A7) |
 | `leadscout post <domain>` | Repurpose a (redacted) brief/demo into niche posts + cadence log (A9) |
 | `leadscout scout` / `add` / `companies` | Discovery Lite: candidate list (HN/YC + manual) (A2) |
+| `leadscout search <query>` | Search-based discovery via web-search API (needs `SEARCH_API_KEY`) |
 | `leadscout warm` / `warm-add` / `warm-import` | Warm-network reactivation + import (A8) |
 | `leadscout promote` / `advance` / `pipeline` | CRM-lite: lead lifecycle + follow-ups digest (A10) |
 | `leadscout rank` | Rank briefed companies by explainable opportunity score (B5) |

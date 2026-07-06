@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     github_enrichment: bool = True   # attach GitHub eng-context facts to briefs (official API)
     hunter_api_key: str = ""
 
+    # --- Search-based discovery (official web-search API; compliant) ---
+    search_api_key: str = ""         # Brave Search API token (free tier ~2k/mo); enables `leadscout search`
+    search_provider: str = "brave"
+
     # --- Budget guards ---
     frontier_monthly_budget_inr: int = 1000
     groq_daily_request_cap: int = 14000

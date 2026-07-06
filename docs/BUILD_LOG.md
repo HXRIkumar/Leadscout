@@ -223,3 +223,18 @@ URL. Facts-only (no auto-disqualify, avoids false positives). Rendered as an
 Live: github.com/plausible — 21 repos, Elixir/HTML/PHP, no ML, active. +2 tests.
 
 Tests 66/66, ruff clean.
+
+**Improvement #7 — search-based discovery (Brave, keyed).**
+`sources/search.py` SearchSource turns a niche query into candidate domains via the
+Brave Search API (compliant, official); platforms filtered; candidates verified by
+`brief` (no fabrication). Graceful no-op without SEARCH_API_KEY. `leadscout search
+<query>`. Decision D9 recorded (needs the operator to add a key). +2 tests.
+
+Tests 68/68, ruff clean.
+
+### Session 4 summary
+7 compliant, quality-oriented improvements shipped (consultant diagnosis, widget
+detection, scoring+rank, research link-outs, doc-quality, GitHub enrichment, search
+discovery). Compliance boundary held (D8): no ToS-violating scrapers; restricted
+sources handled as manual link-outs. Remaining roadmap + honest blockers in
+NEXT_STEPS. Next best action: OPERATE to unlock outcome-gated C1/C2/C3.
