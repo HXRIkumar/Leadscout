@@ -204,3 +204,12 @@ hand; LeadScout never scrapes them (SPEC §3.5/§7.7). Pure string building, no 
 Serves "discover decision makers" + "actionable outreach intelligence". +2 tests.
 
 Tests 62/62, ruff clean.
+
+**Improvement #5 — documentation-quality scoring (A3/demo feasibility).**
+`research/docquality.py` scores public help/docs coverage (page breadth + trainable
+volume) 0-100 + band (thin/moderate/rich) from the fetched corpus — the best predictor
+of RAG deflection potential. Rendered as a "Documentation coverage" brief section, cited
+by doc URLs; exposed on BriefResult. Offline, deterministic. Live: plausible.io 19/100
+(thin, 1 doc page crawled — honest reflection of shallow crawl). +2 tests.
+
+Tests 64/64, ruff clean.

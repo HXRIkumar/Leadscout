@@ -17,6 +17,7 @@ from ..intelligence.scorer import ScoreResult, opportunity_score
 from ..kernel import Kernel, load_kernel
 from ..logging import RunLog, get_logger
 from ..models import Artifact, Brief, Company, Score, Signal
+from .docquality import DocQuality, assess_docs
 from .extract import SignalCandidate, extract_signals, verify_signals
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
 from .links import research_links
@@ -34,6 +35,7 @@ class BriefResult:
     cost: CostEstimate
     signals: list[SignalCandidate]
     score: ScoreResult | None = None
+    doc_quality: DocQuality | None = None
     pages: list[str] = field(default_factory=list)
     runlog: RunLog | None = None
 
@@ -81,8 +83,11 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     # 5) opportunity score (explainable, deterministic) for triage/ranking
     score = opportunity_score(signals, kernel.offer.archetype, disqualified=dx.disqualified)
 
+    # 5b) documentation coverage (RAG deflection potential), from fetched docs
+    doc_quality = assess_docs(corpus)
+
     # 6) compose markdown
-    md = _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, list(corpus.keys()), runlog)
+    md = _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, signals, list(corpus.keys()), runlog)
     from ..config import get_settings
     brief_path = get_settings().data_path / "companies" / domain / "brief.md"
     brief_path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,7 +99,7 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     runlog.write()
     return BriefResult(
         domain=domain, company_name=company_name, brief_path=str(brief_path),
-        diagnosis=dx, cost=cost, signals=signals, score=score,
+        diagnosis=dx, cost=cost, signals=signals, score=score, doc_quality=doc_quality,
         pages=list(corpus.keys()), runlog=runlog,
     )
 
@@ -146,7 +151,7 @@ def _persist(domain, company_name, kernel, dx, cost, score, signals, results, br
         ))
 
 
-def _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, pages, runlog) -> str:
+def _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, signals, pages, runlog) -> str:
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     positives = [s for s in signals if not s.is_anti_signal]
     anti = [s for s in signals if s.is_anti_signal]
@@ -223,6 +228,17 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, score, signals, pa
     if score.factor_breakdown:
         lines.append("")
         lines.append("- Factors: " + " · ".join(f"{k} {v:g}" for k, v in score.factor_breakdown.items()))
+    lines.append("")
+
+    lines.append("## Documentation coverage")
+    lines.append("")
+    lines.append(f"**{doc_quality.score}/100 ({doc_quality.band})** — {doc_quality.doc_pages} "
+                 f"help/doc page(s), ~{doc_quality.total_chars:,} chars of trainable content "
+                 f"(RAG deflection potential).")
+    if doc_quality.sources:
+        lines.append("")
+        for u in doc_quality.sources[:6]:
+            lines.append(f"- <{u}>")
     lines.append("")
 
     if dx.matched_patterns:
