@@ -34,6 +34,16 @@ Cost is the shared ₹1,000/mo frontier budget.
 | 2 briefs + 12-Q&A demo (Session 3) | ₹1.32 total | `gpt-5-mini` ≈ $0.016 |
 | Per consultant brief (extraction+diagnosis on frontier) | ≈ ₹0.5–0.8 | ~30–50/mo ⇒ well under ₹1,000 cap |
 
+## Tech-stack / support-widget detection (live)
+
+| Site | Server HTML | Detected |
+|---|---|---|
+| gorgias.com | 274 KB | ✅ Gorgias (`gorgias.chat`) |
+| helpscout.com | 974 KB | ✗ (beacon JS-injected — needs browser fallback) |
+
+Precision: high (specific vendor fingerprints, verbatim-verified). Recall: bounded to
+server-rendered loaders; JS-injected widgets need `USE_BROWSER_FALLBACK` (B7).
+
 ## Test suite
 
 | Checkpoint | Tests | Lint |
@@ -42,6 +52,7 @@ Cost is the shared ₹1,000/mo frontier budget.
 | + A10/A11/A6/A7/A8/A9/B7 | 44 | clean |
 | + OpenAI switch + anti-signal gate + router tests | 53 | clean |
 | + consultant-grade diagnosis | 54 | clean |
+| + tech-stack / widget detection | 57 | clean |
 
 _Method: runs are cache-first; live briefs use the on-disk fetch cache to stay polite
 (≥2s/domain, robots-honored). Numbers above are from plausible.io and tailscale.com,

@@ -174,3 +174,14 @@ section. New diagnostician prompt (v2). Live-verified on plausible.io (ROI 8.1×
 evidence-cited). +1 regression test. Benchmarks recorded in docs/BENCHMARKS.md.
 
 Tests 54/54, ruff clean.
+
+**Improvement #2 — tech-stack / support-widget detection (A2/A3).**
+`research/techstack.py` fingerprints support/helpdesk widgets (Intercom, Zendesk,
+Gorgias, Help Scout, Front, Freshchat, Drift, Crisp, Tidio, Olark, HubSpot) from a
+site's own public HTML — a strong, specific Tier-1 support signal. Evidence is the
+vendor fingerprint, verbatim in the HTML, so it passes the same fail-closed verifier.
+Integrated into the brief pipeline (verified against an HTML corpus, merged + deduped).
+Live-verified: Gorgias detected on gorgias.com; recall caveat recorded (JS-injected
+widgets need the B7 browser fallback). +3 tests.
+
+Tests 57/57, ruff clean.

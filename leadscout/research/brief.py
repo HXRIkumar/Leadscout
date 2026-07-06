@@ -15,8 +15,9 @@ from ..diagnose import CostEstimate, Diagnosis, diagnose, estimate_cost
 from ..kernel import Kernel, load_kernel
 from ..logging import RunLog, get_logger
 from ..models import Artifact, Brief, Company, Signal
-from .extract import SignalCandidate, extract_signals
+from .extract import SignalCandidate, extract_signals, verify_signals
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
+from .techstack import detect_widgets
 
 log = get_logger(__name__)
 
@@ -56,6 +57,15 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
 
     # 2) extract + verify signals (fail-closed)
     signals = extract_signals(corpus, kernel, runlog, prefer_llm=use_llm)
+
+    # 2b) tech-stack detection from raw HTML (compliant; verified against the HTML)
+    html_corpus = {r.url: r.html for r in results if r.html}
+    widget_signals = verify_signals(detect_widgets(results), html_corpus, runlog)
+    seen = {(s.signal_type, s.evidence_quote) for s in signals}
+    for w in widget_signals:
+        if (w.signal_type, w.evidence_quote) not in seen:
+            signals.append(w)
+    signals.sort(key=lambda s: s.confidence, reverse=True)
 
     # 3) cost-of-problem (A5) — computed first so the diagnosis can cite ROI
     cost = estimate_cost(signals, kernel)

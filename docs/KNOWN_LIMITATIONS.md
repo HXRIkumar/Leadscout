@@ -69,6 +69,13 @@ deliverable; each has a note on when/how to address it.
     "…?" sentences from the docs, falling back to a generic support set. Sites with
     little public help text yield fewer/weaker questions (and lower coverage).
 
+14. **Widget detection sees server-HTML loaders only.** `techstack.detect_widgets`
+    fingerprints support widgets (Intercom, Zendesk, Gorgias, …) in the fetched HTML.
+    Verified live (Gorgias on gorgias.com). Widgets injected later by JS/GTM (e.g.
+    Help Scout's beacon) won't be in the initial HTML — enable `USE_BROWSER_FALLBACK`
+    (B7) to render and catch those. Precision is high (specific vendor fingerprints);
+    recall is bounded by server-side rendering.
+
 ## Environment notes
 
 - Built/tested on Python **3.12** via `uv` (system Python is 3.14; 3.12 avoids
