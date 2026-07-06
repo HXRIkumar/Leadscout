@@ -31,7 +31,7 @@ BULK_TASKS = {"research", "polish"}
 # free tier as budget/error fallback: diagnosis, demo generation, signal EXTRACTION
 # (moved here for max precision — cheap on gpt-5-mini at 30-50 companies/mo), plus
 # proposal-quality reasoning and architecture suggestions.
-FRONTIER_TASKS = {"diagnosis", "demo", "extraction", "proposal", "architecture"}
+FRONTIER_TASKS = {"diagnosis", "demo", "extraction", "proposal", "architecture", "expand"}
 
 
 class NoLLMAvailable(RuntimeError):

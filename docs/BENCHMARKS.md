@@ -59,6 +59,7 @@ server-rendered loaders; JS-injected widgets need `USE_BROWSER_FALLBACK` (B7).
 | + GitHub enrichment | 66 | clean |
 | + search-based discovery | 68 | clean |
 | + explicit verification field | 69 | clean |
+| + expansion + product-launch feeds | 75 | clean |
 
 _Method: runs are cache-first; live briefs use the on-disk fetch cache to stay polite
 (≥2s/domain, robots-honored). Numbers above are from plausible.io and tailscale.com,

@@ -244,3 +244,22 @@ SignalCandidate + Signal gain a `verification` field ("verbatim" | "reattributed
 set by verify_signals and surfaced in the brief evidence lines ("✓ verbatim"). Closes
 the goal's extraction spec: every fact carries evidence quote + source URL + confidence
 + verification result. +1 test (69).
+
+**Improvement #9 — competitor / similar-company expansion.**
+`sources/expand.py` — frontier LLM suggests comparable in-niche companies; quality-
+safeguarded (niche prefilter drops agencies/AI-native, platforms filtered, verify=True
+requires the domain to actually resolve → no hallucinated domains). Candidates only,
+verified by `brief`. `leadscout expand <domain>`; task "expand" added to FRONTIER_TASKS.
++2 tests.
+
+**Improvement #10 — product-launch detection via RSS/Atom feeds.**
+`research/feeds.py` — stdlib XML parsing of the site's own feed (RSS + Atom, namespace-
+agnostic) → dated `docs_lagging` signals (title = verbatim quote, feed URL = source,
+recency in days), verified against the raw feed XML. Integrated into the brief pipeline
+(step 2c, best-effort, first-hit). +4 tests.
+
+**All discovery strategies in the goal are now implemented:** search-based, tech-stack,
+competitor + similar-company expansion, hiring signals, funding signals, product-launch,
+GitHub activity, doc-quality scoring, AI-adoption/opportunity scoring, dedup.
+
+Tests 75/75, ruff clean.

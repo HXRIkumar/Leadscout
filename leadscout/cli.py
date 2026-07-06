@@ -141,6 +141,27 @@ def search(
 
 
 @app.command()
+def expand(
+    domain: str = typer.Argument(..., help="Seed company domain to expand from"),
+    limit: int = typer.Option(8, help="Max suggestions"),
+    no_verify: bool = typer.Option(False, "--no-verify", help="Skip the domain-reachability check"),
+) -> None:
+    """expand <domain> — suggest + verify similar in-niche companies (LLM, compliant)."""
+    from .sources.expand import similar_companies
+    cands = similar_companies(domain, limit=limit, verify=not no_verify)
+    if not cands:
+        console.print("[yellow]No similar companies (needs an LLM key, or none passed verification).[/yellow]")
+        return
+    t = Table(title=f"Similar to {domain} ({len(cands)})")
+    t.add_column("domain", style="cyan")
+    t.add_column("name")
+    t.add_column("why")
+    for c in cands:
+        t.add_row(c.domain, c.name[:28], (c.description or "")[:48])
+    console.print(t)
+
+
+@app.command()
 def companies(all_: bool = typer.Option(False, "--all", help="Include disqualified")) -> None:
     """List candidate companies in the pipeline."""
     from .sources.discovery import list_candidates

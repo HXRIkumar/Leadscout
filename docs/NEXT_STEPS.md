@@ -72,10 +72,10 @@ adapter/agent (SPEC §15). `uv run pytest -q` · `uv run ruff check leadscout te
 **Remaining — with honest impact / blocker:**
 | Item | Status | Note |
 |---|---|---|
-| Search-based discovery | built, **needs SEARCH_API_KEY** (D9) | activates on key |
-| Similar-company / competitor expansion | not built | LLM-suggest + verify; leans *quantity* — deferred vs the goal's own "quality not quantity" + SPEC hand-fit thesis |
-| Product-launch / RSS / news feeds | partial (changelog signals) | incremental over existing `docs_lagging`; add feed parsing if inbound volume needs it |
-| Funding detection / SEC EDGAR (B6) | `funding_event` signal live; EDGAR reserved | SPEC gates EDGAR to Phase 2 (pipeline top-up) — don't build ahead of trigger |
+| Search-based discovery | **built** (`leadscout search`), needs SEARCH_API_KEY (D9) | activates on key |
+| Similar-company / competitor expansion | **built** (`leadscout expand`) | LLM-suggest → niche prefilter → domain-reachability verify; candidates verified by `brief` |
+| Product-launch detection (RSS/Atom) | **built** (`research/feeds.py`) | dated `docs_lagging` signals from the site's own feed, verbatim-verified |
+| Funding detection | **built** (`funding_event` extraction from site text) | SEC EDGAR (B6) remains reserved — official-API funding is structured data that doesn't fit the verbatim-quote model; add at Phase-2 trigger as a distinct fact type |
 | LinkedIn / G2 / Capterra / Crunchbase / Reddit / Product Hunt (automated) | **never** (D8) | ToS / SPEC §3.5; shipped as manual link-outs instead |
 | C1 win/loss · C2 pricing · C3 patterns · C5 learned scoring | reserved | **need outcome data** — unlocked only by *operating* (run briefs → send → record wins/losses) |
 

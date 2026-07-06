@@ -19,6 +19,7 @@ from ..logging import RunLog, get_logger
 from ..models import Artifact, Brief, Company, Score, Signal
 from .docquality import DocQuality, assess_docs
 from .extract import SignalCandidate, extract_signals, verify_signals
+from .feeds import detect_product_launches
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
 from .github import GitHubProfile
 from .github import enrich as enrich_github
@@ -73,7 +74,15 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     seen = {(s.signal_type, s.evidence_quote) for s in signals}
     for w in widget_signals:
         if (w.signal_type, w.evidence_quote) not in seen:
+            seen.add((w.signal_type, w.evidence_quote))
             signals.append(w)
+
+    # 2c) product-launch detection via RSS/Atom feed (compliant; dated signals)
+    for ls in detect_product_launches(domain, use_cache=use_cache):
+        key = (ls.signal_type, ls.evidence_quote)
+        if key not in seen:
+            seen.add(key)
+            signals.append(ls)
     signals.sort(key=lambda s: s.confidence, reverse=True)
 
     # 3) cost-of-problem (A5) — computed first so the diagnosis can cite ROI
