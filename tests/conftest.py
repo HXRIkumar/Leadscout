@@ -17,6 +17,7 @@ def temp_env(tmp_path, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path}/test.sqlite")
     monkeypatch.setenv("KERNEL_PATH", str(REPO / "kernel" / "niche.yaml"))
     monkeypatch.setenv("CRAWL_MIN_INTERVAL_SECONDS", "0")
+    monkeypatch.setenv("GITHUB_ENRICHMENT", "false")  # no live GitHub calls in the pipeline during tests
     monkeypatch.setenv("OPERATOR_EMAIL", "op@example.com")
     monkeypatch.setenv("OPERATOR_NAME", "Op")
     monkeypatch.setenv("POSTAL_ADDRESS", "1 Test St, Testville")

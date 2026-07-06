@@ -213,3 +213,13 @@ by doc URLs; exposed on BriefResult. Offline, deterministic. Live: plausible.io 
 (thin, 1 doc page crawled — honest reflection of shallow crawl). +2 tests.
 
 Tests 64/64, ruff clean.
+
+**Improvement #6 — GitHub enrichment (official API, SPEC §7.5).**
+`research/github.py` resolves the org precision-first (domain root only, no fuzzy
+search — wrong-company facts would violate never-fabricate) and adds facts: public
+repo count, top languages, ML/AI-repo presence, recent activity — cited by the GitHub
+URL. Facts-only (no auto-disqualify, avoids false positives). Rendered as an
+"Engineering (GitHub)" brief section; gated by GITHUB_ENRICHMENT (off in tests).
+Live: github.com/plausible — 21 repos, Elixir/HTML/PHP, no ML, active. +2 tests.
+
+Tests 66/66, ruff clean.

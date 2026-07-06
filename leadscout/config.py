@@ -39,6 +39,7 @@ class Settings(BaseSettings):
 
     # --- Enrichment ---
     github_token: str = ""
+    github_enrichment: bool = True   # attach GitHub eng-context facts to briefs (official API)
     hunter_api_key: str = ""
 
     # --- Budget guards ---

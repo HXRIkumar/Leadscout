@@ -20,6 +20,8 @@ from ..models import Artifact, Brief, Company, Score, Signal
 from .docquality import DocQuality, assess_docs
 from .extract import SignalCandidate, extract_signals, verify_signals
 from .fetch import FetchResult, crawl_company, normalize_domain, page_paths
+from .github import GitHubProfile
+from .github import enrich as enrich_github
 from .links import research_links
 from .techstack import detect_widgets
 
@@ -36,6 +38,7 @@ class BriefResult:
     signals: list[SignalCandidate]
     score: ScoreResult | None = None
     doc_quality: DocQuality | None = None
+    github: GitHubProfile | None = None
     pages: list[str] = field(default_factory=list)
     runlog: RunLog | None = None
 
@@ -86,8 +89,13 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     # 5b) documentation coverage (RAG deflection potential), from fetched docs
     doc_quality = assess_docs(corpus)
 
+    # 5c) GitHub engineering-context enrichment (compliant official API; facts-only)
+    from ..config import get_settings as _gs
+    github = enrich_github(domain, company_name) if _gs().github_enrichment else None
+
     # 6) compose markdown
-    md = _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, signals, list(corpus.keys()), runlog)
+    md = _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, github,
+                           signals, list(corpus.keys()), runlog)
     from ..config import get_settings
     brief_path = get_settings().data_path / "companies" / domain / "brief.md"
     brief_path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,7 +108,7 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     return BriefResult(
         domain=domain, company_name=company_name, brief_path=str(brief_path),
         diagnosis=dx, cost=cost, signals=signals, score=score, doc_quality=doc_quality,
-        pages=list(corpus.keys()), runlog=runlog,
+        github=github, pages=list(corpus.keys()), runlog=runlog,
     )
 
 
@@ -151,7 +159,7 @@ def _persist(domain, company_name, kernel, dx, cost, score, signals, results, br
         ))
 
 
-def _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, signals, pages, runlog) -> str:
+def _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality, github, signals, pages, runlog) -> str:
     today = datetime.now(UTC).strftime("%Y-%m-%d")
     positives = [s for s in signals if not s.is_anti_signal]
     anti = [s for s in signals if s.is_anti_signal]
@@ -240,6 +248,20 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality
         for u in doc_quality.sources[:6]:
             lines.append(f"- <{u}>")
     lines.append("")
+
+    if github:
+        lines.append("## Engineering (GitHub)")
+        lines.append("")
+        langs = ", ".join(github.top_languages) or "n/a"
+        lines.append(
+            f"**github.com/{github.login}** — {github.public_repos} public repos; "
+            f"top languages: {langs}; ML/AI repos: {'yes' if github.has_ml_ai_repos else 'no'}; "
+            f"recently active: {'yes' if github.recently_active else 'no'}."
+        )
+        lines.append(f"  <br>↳ source: <{github.url}>")
+        if github.has_ml_ai_repos and github.ml_evidence:
+            lines.append(f"  <br>↳ ML/AI repo: <{github.ml_evidence}>")
+        lines.append("")
 
     if dx.matched_patterns:
         lines.append("## Matched pain patterns")
