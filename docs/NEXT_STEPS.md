@@ -6,10 +6,11 @@ turning them on with keys + your data, (2) operating the loop on real prospects,
 
 ## Do first (fast wins on wake-up)
 
-1. **Add API keys** to `.env` (copy `.env.example`) — a free **Groq** key alone turns
-   on LLM extraction/diagnosis, demo answers, and outreach/content polish (all on the
-   free bulk tier). Optional: Gemini (fallback), Anthropic (frontier diagnosis only,
-   ₹1,000/mo cap). Verify the provider model IDs (see `KNOWN_LIMITATIONS.md #2`).
+1. **Add API keys** to `.env` (copy `.env.example`). A free **Groq** key turns on bulk
+   LLM extraction + outreach/content polish (free tier). An **OpenAI** key powers the
+   frontier tier — diagnosis + demo generation (default `gpt-5-mini`, ₹1,000/mo cap).
+   Optional: Gemini (free bulk fallback). Anthropic is retained but off by default
+   (set `FRONTIER_PROVIDER=anthropic` to re-enable). Verify model IDs (`KNOWN_LIMITATIONS.md #2`).
 2. **Review `kernel/niche.yaml` + `DECISIONS_NEEDED.md`** (D1–D3, D5 are yours to
    confirm/override — all cheap to change).
 3. **Fill D4 — your warm network** → `leadscout warm-import contacts.csv`

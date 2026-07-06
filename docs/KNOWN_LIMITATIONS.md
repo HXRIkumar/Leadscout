@@ -8,16 +8,18 @@ deliverable; each has a note on when/how to address it.
 1. **Uniform httpx LLM layer (not per-vendor SDKs).** `leadscout/llm/providers.py`
    calls Groq/Gemini/OpenAI/Anthropic over one httpx interface. Rationale: the
    primary path is Groq/Gemini free tiers, the SPEC mandates a "deliberately boring,
-   cheap" tool, and one HTTP shape is simpler than four SDKs. The `claude-api` skill
-   prefers the official Anthropic SDK. The Anthropic call uses the correct documented
-   Messages API wire format. **Swapping to the official SDK later is isolated to that
-   one file.** Not yet exercised against real keys (none configured this session).
+   cheap" tool, and one HTTP shape is simpler than four SDKs. OpenAI (Chat Completions)
+   is the default frontier; the Anthropic (Messages API) adapter is retained for
+   re-enable. **Swapping either to its official SDK later is isolated to that one
+   file.** Not yet exercised against real keys (none configured this session) — in
+   particular the GPT-5 call path (no `temperature`, `response_format` json_object)
+   is written to the documented API but unverified live.
 
 2. **Provider model IDs are best-effort defaults.** `GROQ_MODEL=llama-3.1-8b-instant`,
-   `GEMINI_MODEL=gemini-flash-lite-latest`, `OPENAI_MODEL=gpt-4o-mini`, frontier
-   `claude-haiku-4-5-20251001`. Verify against current provider docs before first
-   paid use. Frontier defaults to Haiku 4.5 for the ₹1,000/mo cap (D5); bump to
-   Sonnet/Opus if diagnosis quality needs it (config `FRONTIER_MODEL`).
+   `GEMINI_MODEL=gemini-flash-lite-latest`, frontier `OPENAI_MODEL=gpt-5-mini`. Verify
+   against current provider docs before first paid use (model names churn). Frontier
+   defaults to **gpt-5-mini** for the ₹1,000/mo cap (D7); bump to `gpt-5` if diagnosis
+   quality needs it, or `gpt-5-nano` for cheapest, via `FRONTIER_MODEL`.
 
 3. **Discovery adapters are fragile by design (A2).** HN depends on Algolia+Firebase
    shape; YC depends on scraping a rotating Algolia key from the site (often fails →

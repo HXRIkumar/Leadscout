@@ -32,8 +32,10 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     openai_api_key: str = ""
     anthropic_api_key: str = ""
-    frontier_provider: str = "anthropic"
-    frontier_model: str = "claude-haiku-4-5-20251001"
+    # Frontier provider is provider-agnostic (see leadscout/llm/router.py). Default: OpenAI.
+    # Re-enable Anthropic with FRONTIER_PROVIDER=anthropic + FRONTIER_MODEL=<claude model>.
+    frontier_provider: str = "openai"    # openai | anthropic
+    frontier_model: str = "gpt-5-mini"   # lightweight GPT-5 reasoning model, right-sized for diagnosis
 
     # --- Enrichment ---
     github_token: str = ""

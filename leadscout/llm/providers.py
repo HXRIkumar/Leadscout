@@ -1,14 +1,15 @@
 """LLM provider calls over a single httpx interface (SPEC §4.1).
 
 One uniform HTTP layer for all providers keeps the budget tool boring and cheap
-(the primary path is Groq/Gemini free tiers). Each function returns a
-`ProviderResponse` or raises `ProviderError`. Callers (router.py) own routing,
-caching, and budget.
+(the primary path is Groq/Gemini free tiers; OpenAI is the frontier default). Each
+function returns a `ProviderResponse` or raises `ProviderError`. Callers (router.py)
+own routing, caching, and budget. Provider-agnostic by design: switching the frontier
+provider is a config change, not a code change (FRONTIER_PROVIDER / FRONTIER_MODEL).
 
-NOTE (see docs/DECISIONS_NEEDED.md D7): uniform httpx is a deliberate deviation
-from per-vendor SDKs. The Anthropic call uses the documented Messages API wire
-format (x-api-key + anthropic-version). Swapping to the official SDK later is
-isolated to this file.
+NOTE (see docs/KNOWN_LIMITATIONS.md #1): uniform httpx is a deliberate deviation
+from per-vendor SDKs. The OpenAI call uses the Chat Completions wire format; the
+Anthropic call (retained, for FRONTIER_PROVIDER=anthropic) uses the Messages API
+wire format. Swapping either to its official SDK later is isolated to this file.
 """
 
 from __future__ import annotations
@@ -18,16 +19,23 @@ from dataclasses import dataclass
 import httpx
 
 # Provider default models (verify against current provider docs before first paid use).
-GROQ_MODEL = "llama-3.1-8b-instant"      # V1 primary extraction model
-GEMINI_MODEL = "gemini-flash-lite-latest"
-OPENAI_MODEL = "gpt-4o-mini"
+GROQ_MODEL = "llama-3.1-8b-instant"      # V1 primary extraction model (bulk, free)
+GEMINI_MODEL = "gemini-flash-lite-latest"  # schema fallback (bulk, free)
+OPENAI_MODEL = "gpt-5-mini"              # default frontier model (lightweight GPT-5 reasoning)
 
 _ANTHROPIC_VERSION = "2023-06-01"
 _TIMEOUT = 60.0
 
+# Reasoning-model families (OpenAI) reject a non-default `temperature` on Chat Completions.
+_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+
 
 class ProviderError(RuntimeError):
     pass
+
+
+def _is_reasoning_model(model: str) -> bool:
+    return model.lower().startswith(_REASONING_PREFIXES)
 
 
 @dataclass
@@ -49,15 +57,17 @@ def _post(url: str, *, headers: dict, json: dict, params: dict | None = None) ->
 
 
 def _openai_style(base_url: str, api_key: str, model: str, system: str, prompt: str, json_mode: bool) -> ProviderResponse:
-    """Shared shape for OpenAI + Groq (OpenAI-compatible)."""
+    """Shared shape for OpenAI + Groq (OpenAI-compatible Chat Completions)."""
     body: dict = {
         "model": model,
-        "temperature": 0,
         "messages": (
             ([{"role": "system", "content": system}] if system else [])
             + [{"role": "user", "content": prompt}]
         ),
     }
+    # Reasoning models (gpt-5 / o-series) only accept the default temperature; others get temp 0.
+    if not _is_reasoning_model(model):
+        body["temperature"] = 0
     if json_mode:
         body["response_format"] = {"type": "json_object"}
     data = _post(
@@ -113,8 +123,9 @@ def gemini_complete(api_key: str, system: str, prompt: str, *, json_mode: bool =
 def anthropic_complete(api_key: str, system: str, prompt: str, *, model: str, max_tokens: int = 2048, json_mode: bool = False) -> ProviderResponse:
     """Anthropic Messages API (documented REST wire format).
 
-    Haiku 4.5 is the default frontier model (cost-capped); it takes no thinking
-    param. `json_mode` is handled by prompt instruction here (kept minimal).
+    RETAINED adapter — OpenAI is the default frontier provider. Re-enable Anthropic
+    with FRONTIER_PROVIDER=anthropic + FRONTIER_MODEL=<claude model>. `json_mode` is
+    handled by prompt instruction here (kept minimal); no thinking param is sent.
     """
     body: dict = {
         "model": model,

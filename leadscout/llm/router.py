@@ -1,8 +1,9 @@
 """LLM router (SPEC §4.1): one `llm_complete()` entry point.
 
-Routing policy:
-- task "research"/"extraction" (bulk)  -> Groq (free) -> Gemini (free)
-- task "diagnosis"/"demo" (high-value) -> frontier (budget-capped) -> free fallback
+Routing policy (provider-agnostic — chosen by FRONTIER_PROVIDER, default OpenAI):
+- bulk (research / extraction, incl. outreach + content polish)  -> Groq (free) -> Gemini (free)
+- premium (diagnosis / demo generation / proposal / architecture) -> frontier (OpenAI by
+  default; Anthropic if FRONTIER_PROVIDER=anthropic), budget-capped -> free fallback
 
 Cache-first (never pay twice). Budget-guarded (hard caps, warn at 80%). If no
 provider is usable (no keys / all failed / budget exhausted), raises
@@ -24,7 +25,9 @@ from .cache import get_cached, set_cached
 log = get_logger(__name__)
 
 BULK_TASKS = {"research", "extraction"}
-FRONTIER_TASKS = {"diagnosis", "demo"}
+# Premium reasoning tasks routed to the frontier provider (OpenAI by default):
+# diagnosis, demo generation, proposal-quality reasoning, architecture suggestions.
+FRONTIER_TASKS = {"diagnosis", "demo", "proposal", "architecture"}
 
 
 class NoLLMAvailable(RuntimeError):
@@ -65,8 +68,9 @@ def _candidates(task: str, system: str, prompt: str, json_mode: bool) -> list[_C
                                                        model=s.frontier_model, json_mode=json_mode))
 
     def openai_frontier() -> _Candidate:
-        return _Candidate("openai", P.OPENAI_MODEL, "frontier",
-                          lambda: P.openai_complete(s.openai_api_key, system, prompt, json_mode=json_mode))
+        return _Candidate("openai", s.frontier_model, "frontier",
+                          lambda: P.openai_complete(s.openai_api_key, system, prompt,
+                                                    model=s.frontier_model, json_mode=json_mode))
 
     if task in FRONTIER_TASKS:
         if s.frontier_provider == "anthropic" and s.anthropic_api_key:

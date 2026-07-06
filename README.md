@@ -26,9 +26,20 @@ uv run leadscout brief stripe.com   # evidence-verified diagnosis + cost
 ```
 
 `brief <url>` works **fully offline with no API keys** (deterministic heuristic
-extractor). Adding Groq/Gemini/Anthropic keys raises extraction/diagnosis quality.
-Every claim in a brief carries a verbatim quote + source URL and **fails closed** —
-anything not found verbatim in the fetched text is dropped.
+extractor). Adding a free **Groq** key raises extraction quality; an **OpenAI** key
+powers frontier reasoning (diagnosis + demo generation). Every claim in a brief
+carries a verbatim quote + source URL and **fails closed** — anything not found
+verbatim in the fetched text is dropped.
+
+### LLM providers
+
+| Tier | Provider (default) | Used for |
+|---|---|---|
+| Bulk (free) | **Groq** → **Gemini Flash-Lite** | research/extraction, outreach & content polish |
+| Frontier (paid, budget-capped) | **OpenAI** (`gpt-5-mini`) | diagnosis, demo generation, proposal/architecture reasoning |
+
+The router is provider-agnostic. To switch the frontier provider back to Anthropic,
+set `FRONTIER_PROVIDER=anthropic` and `FRONTIER_MODEL=<claude model>` — no code change.
 
 ## Commands
 

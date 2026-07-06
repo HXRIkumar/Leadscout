@@ -203,23 +203,46 @@ def _parse_signals_json(text: str) -> list[dict]:
     return [s for s in sigs if isinstance(s, dict)]
 
 
+# Disqualifying keywords per anti-signal type — used to gate LLM classifications.
+_ANTI_KEYWORDS: dict[str, list[str]] = {r[0]: r[1] for r in SIGNAL_RULES if r[4]}
+
+
+def anti_signal_confirmed(signal_type: str, quote: str) -> bool:
+    """An anti-signal (ai_native/agency) is trusted only if its own quote contains a
+    real disqualifying keyword. Prevents an LLM mislabel (e.g. tagging an "open source"
+    quote as ai_native) from wrongly disqualifying a prospect — "evidence or it didn't
+    happen" applied to the *classification*, not just the quote's existence.
+    """
+    kws = _ANTI_KEYWORDS.get(signal_type)
+    if not kws:
+        return True  # not an anti-signal we gate
+    return bool(_kw_hits(kws, quote.lower()))
+
+
 def verify_signals(
     candidates: list[SignalCandidate], corpus: dict[str, str], runlog: RunLog | None = None
 ) -> list[SignalCandidate]:
-    """Drop any candidate whose quote is not verbatim in the corpus (fail-closed)."""
+    """Drop any candidate whose quote is not verbatim in the corpus (fail-closed),
+    and any anti-signal whose quote doesn't contain a real disqualifying keyword."""
     verified: list[SignalCandidate] = []
     for c in candidates:
         vr = verify_quote(c.evidence_quote, c.source_url, corpus)
-        if vr.ok:
-            if vr.source_url and vr.source_url != c.source_url:
-                c.source_url = vr.source_url
-            verified.append(c)
-            if runlog:
-                runlog.signals_extracted += 1
-        else:
+        if not vr.ok:
             log.info("dropped unverified signal (%s): %s", vr.reason, c.evidence_quote[:80])
             if runlog:
                 runlog.signals_rejected_unverified += 1
+            continue
+        if c.is_anti_signal and not anti_signal_confirmed(c.signal_type, c.evidence_quote):
+            log.info("dropped mislabeled anti-signal (%s, no keyword): %s",
+                     c.signal_type, c.evidence_quote[:80])
+            if runlog:
+                runlog.signals_rejected_unverified += 1
+            continue
+        if vr.source_url and vr.source_url != c.source_url:
+            c.source_url = vr.source_url
+        verified.append(c)
+        if runlog:
+            runlog.signals_extracted += 1
     verified.sort(key=lambda s: s.confidence, reverse=True)
     return verified
 

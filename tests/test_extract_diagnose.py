@@ -59,3 +59,22 @@ def test_cost_defaults_without_evidence():
     cost = estimate_cost(sigs, load_kernel())
     assert cost.inputs["headcount_source"] == "kernel_default"
     assert cost.inputs["support_headcount"] == 3
+
+
+def test_mislabeled_anti_signal_dropped():
+    # Regression: an LLM tagged an open-source quote as ai_native (verbatim, but the
+    # quote has no disqualifying keyword) — it must be dropped, not disqualify anyone.
+    from leadscout.research.extract import SignalCandidate, verify_signals
+    corpus = {"https://x.com/": "Our code is open source too, so you're never locked in."}
+    mislabel = SignalCandidate("ai_native", "Our code is open source too, so you're never locked in.",
+                               "https://x.com/", 0.9, is_anti_signal=True)
+    assert verify_signals([mislabel], corpus) == []
+
+
+def test_real_anti_signal_kept():
+    from leadscout.research.extract import SignalCandidate, verify_signals
+    corpus = {"https://x.com/": "Our product is powered by AI and built on GPT."}
+    real = SignalCandidate("ai_native", "Our product is powered by AI and built on GPT.",
+                           "https://x.com/", 0.9, is_anti_signal=True)
+    kept = verify_signals([real], corpus)
+    assert len(kept) == 1  # contains "powered by ai" -> confirmed disqualifier

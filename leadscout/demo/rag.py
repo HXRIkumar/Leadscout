@@ -139,9 +139,11 @@ def _answer_with_llm(question: str, passages: list[Chunk]) -> str | None:
         f"QUESTION: {question}\n\nCONTEXT:\n{ctx}"
     )
     try:
-        # bulk/free tier — demo Q&A is high-volume; keep frontier for diagnosis only (§4.5)
+        # frontier task (demo generation): quality of demo answers is what the prospect
+        # sees. Cheap on gpt-5-mini and budget-guarded; falls back to free tier without
+        # frontier keys, and to extractive answers with no keys at all.
         return llm_complete(
-            prompt, task="extraction",
+            prompt, task="demo",
             system="You are a helpful, accurate support assistant. Ground every answer in the provided context.",
         ).text.strip()
     except NoLLMAvailable:

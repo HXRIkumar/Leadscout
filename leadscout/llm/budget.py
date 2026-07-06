@@ -19,15 +19,23 @@ from pathlib import Path
 from ..config import get_settings
 
 # Approx USD per 1M tokens (input, output). ~83 INR/USD. Used to estimate frontier spend.
-# Extend as providers are added. Conservative — over-estimates protect the cap.
+# Provider-agnostic: add any model here. Conservative — over-estimates protect the cap.
 _PRICES_USD_PER_MTOK: dict[str, tuple[float, float]] = {
+    # OpenAI (default frontier provider)
+    "gpt-5": (1.25, 10.0),
+    "gpt-5-mini": (0.25, 2.0),
+    "gpt-5-nano": (0.05, 0.40),
+    "gpt-4o": (2.5, 10.0),
+    "gpt-4o-mini": (0.15, 0.60),
+    "gpt-4.1-mini": (0.40, 1.60),
+    # Anthropic (retained — re-enable via FRONTIER_PROVIDER=anthropic)
     "claude-haiku-4-5": (1.0, 5.0),
     "claude-haiku-4-5-20251001": (1.0, 5.0),
     "claude-sonnet-5": (3.0, 15.0),
     "claude-opus-4-8": (5.0, 25.0),
-    "gpt-4o-mini": (0.15, 0.60),
-    "gpt-4o": (2.5, 10.0),
 }
+# Conservative default for an unlisted model (over-estimate so the cap can't be silently blown).
+_DEFAULT_PRICE_USD_PER_MTOK: tuple[float, float] = (10.0, 30.0)
 _INR_PER_USD = 83.0
 
 
@@ -36,7 +44,7 @@ class BudgetExceeded(RuntimeError):
 
 
 def estimate_inr(model: str, input_tokens: int, output_tokens: int) -> float:
-    inp, out = _PRICES_USD_PER_MTOK.get(model, (5.0, 25.0))  # default to Opus rates (safe over-estimate)
+    inp, out = _PRICES_USD_PER_MTOK.get(model, _DEFAULT_PRICE_USD_PER_MTOK)
     usd = (input_tokens / 1_000_000) * inp + (output_tokens / 1_000_000) * out
     return usd * _INR_PER_USD
 

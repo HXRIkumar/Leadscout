@@ -68,6 +68,22 @@ Legend: **Change cost** = how expensive it is to reverse later.
   number lands in the 1:1 brief where it's backed by their own evidence.
 - **Change cost:** Cheap.
 
+## D7 — Frontier provider = OpenAI (RESOLVED by operator, 2026-07-06)
+- **Question:** Which frontier provider powers premium reasoning (diagnosis, demo
+  generation, proposal/architecture)?
+- **Decision (implemented):** **OpenAI**, default model **`gpt-5-mini`**.
+- **Rationale (operator):** Already has a paid OpenAI account; no paid Anthropic
+  account; uses Claude Code for development, so paying for the Anthropic API would
+  duplicate capability without clear added ROI.
+- **Model choice:** `gpt-5-mini` is a lightweight GPT-5 reasoning model — right-sized
+  for the diagnosis/demo workload and cheap ($0.25/$2 per 1M tok in/out) against the
+  ₹1,000/mo cap. Use `gpt-5` for maximum quality, `gpt-5-nano` for cheapest.
+- **Reversibility:** Trivial and code-free — set `FRONTIER_PROVIDER=anthropic` +
+  `FRONTIER_MODEL=<claude model>`. The Anthropic adapter + budget prices are retained.
+- **Change cost:** Cheap (env vars only).
+
 ---
 
-_No item here blocked the build. D4 is the only one requiring your personal knowledge._
+_No item here blocked the build. D4 is the only one still requiring your personal
+knowledge (D7 is resolved). Bulk tiers (Groq/Gemini) remain the free primary path;
+OpenAI is used only for the ~30-50 curated frontier calls._

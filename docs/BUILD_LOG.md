@@ -106,8 +106,34 @@ engineering that operate on already-fetched public data — no business input ne
 Also added **B7's single Playwright fallback** (`research/browser.py`, default-off,
 dependency-guarded) for thin/JS-only pages — the one B-module the spec scopes for "now".
 
-**Final state:** **44 tests passing, ruff clean, ~4.2k LOC.** Every Category-A module
-(A1-A11) is functionally implemented (four newest verified live) + B7 single fallback.
+**Final state (Session 1):** **44 tests passing, ruff clean, ~4.2k LOC.** Every
+Category-A module (A1-A11) functional (four newest verified live) + B7 single fallback.
 Remaining seams (B/C) are correctly trigger-gated. Genuine stopping point: remaining
 work needs API keys, the operator's warm-network data (D4), live discovery testing, or
 trigger events (a signed pilot, ≥5-10 outcomes) — none buildable without your input.
+
+## 2026-07-06 — Session 2: frontier provider → OpenAI (D7)
+
+Operator switched the frontier provider from Anthropic to **OpenAI** (has paid OpenAI,
+no paid Anthropic, uses Claude Code for dev — avoids duplicate spend). Provider-agnostic
+router made this a config change, not a rewrite:
+
+- `config.py`: `frontier_provider` default `openai`, `frontier_model` default `gpt-5-mini`.
+- `providers.py`: `OPENAI_MODEL=gpt-5-mini`; added `_is_reasoning_model` so GPT-5/o-series
+  calls omit `temperature` (reasoning models reject non-default temp); reframed the
+  Anthropic adapter as retained/optional.
+- `router.py`: OpenAI frontier candidate now honors `FRONTIER_MODEL`; `FRONTIER_TASKS`
+  broadened to `{diagnosis, demo, proposal, architecture}`.
+- Routing correction (supersedes Session 1's demo→free note): **demo generation now
+  routes to the frontier** (cheap on gpt-5-mini, budget-guarded); outreach & content
+  polish stay on the free bulk tier ($0 marginal, per §4.1).
+- `budget.py`: provider-agnostic price table (GPT-5 family + OpenAI first, Anthropic
+  retained); conservative default for unlisted models (no more Opus-specific default).
+- Docs (README, NEXT_STEPS, KNOWN_LIMITATIONS, DECISIONS_NEEDED D7) updated.
+- **No Claude-specific runtime dependency remains** — Anthropic is a retained,
+  env-selectable adapter only. Nothing in the pipeline requires a Claude model.
+- `.env.example` set to OpenAI; the operator's local `.env` must be updated by hand
+  (secret-scan guard blocks tool edits) — change `FRONTIER_PROVIDER=openai` +
+  `FRONTIER_MODEL=gpt-5-mini`.
+
+Tests still 44/44, ruff clean.
