@@ -82,8 +82,29 @@ Legend: **Change cost** = how expensive it is to reverse later.
   `FRONTIER_MODEL=<claude model>`. The Anthropic adapter + budget prices are retained.
 - **Change cost:** Cheap (env vars only).
 
+## D8 — Data-source compliance boundary (RESOLVED by engineering, 2026-07-07)
+- **Question:** The "lead-gen upgrade" goal lists LinkedIn, G2, Capterra, Crunchbase,
+  Reddit, Product Hunt as data sources. Which do we automate?
+- **Decision (implemented):** Split by compliance.
+  - **Automate (compliant):** company sites, official docs, careers, pricing,
+    blog/changelog, **RSS/Atom feeds**, official **GitHub REST API**, **SEC EDGAR**,
+    HN (official APIs), YC (public index), sitemaps, and a **keyed web-search API**
+    (Brave/SerpAPI) when a key is present. Tech-stack fingerprinting from a site's own
+    public HTML is compliant.
+  - **Never automate (manual link-outs only):** **LinkedIn** (SPEC §3.5 Never Build —
+    ToS + hiQ precedent + Proxycurl shutdown), **G2 / Capterra** (ToS bar commercial
+    scraping), **Reddit** (commercial API is paid/gated), **Crunchbase** (ToS/paid API),
+    **Product Hunt** (API is non-commercial-use only). These are surfaced as
+    pre-filled manual-research URLs the operator opens by hand (V1 §7.7 pattern).
+- **Why:** the platform's moat is *reputation*; a ToS ban or litigation would be
+  catastrophic and is explicitly a Never-Build. Compliant sources + manual link-outs
+  deliver the same intelligence without the risk.
+- **Reversibility:** if the operator later licenses an official API (e.g. Crunchbase
+  paid, Reddit commercial), add it as a normal compliant adapter — the source
+  interface is additive. Change cost: cheap per source.
+
 ---
 
 _No item here blocked the build. D4 is the only one still requiring your personal
-knowledge (D7 is resolved). Bulk tiers (Groq/Gemini) remain the free primary path;
+knowledge (D7, D8 resolved). Bulk tiers (Groq/Gemini) remain the free primary path;
 OpenAI is used only for the ~30-50 curated frontier calls._

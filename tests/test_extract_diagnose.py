@@ -61,6 +61,20 @@ def test_cost_defaults_without_evidence():
     assert cost.inputs["support_headcount"] == 3
 
 
+def test_consultant_grade_fields_deterministic():
+    sigs = extract_signals(CORPUS, load_kernel(), prefer_llm=False)
+    cost = estimate_cost(sigs, load_kernel())
+    dx = diagnose(sigs, load_kernel(), company_name="Acme", cost=cost, use_llm=False)
+    assert dx.business_summary
+    assert dx.pain_points
+    assert dx.ai_opportunities and dx.automation_opportunities
+    assert dx.recommended_project == "rag_support_bot"
+    assert dx.implementation_complexity in {"low", "medium", "high"}
+    assert "$" in dx.estimated_roi           # ROI cites the cost/pilot number
+    assert dx.outreach_angle
+    assert len(dx.proposal_outline) >= 5     # full proposal preview
+
+
 def test_mislabeled_anti_signal_dropped():
     # Regression: an LLM tagged an open-source quote as ai_native (verbatim, but the
     # quote has no disqualifying keyword) — it must be dropped, not disqualify anyone.

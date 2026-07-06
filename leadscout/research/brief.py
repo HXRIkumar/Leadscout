@@ -57,12 +57,12 @@ def build_brief(url: str, *, use_cache: bool = True, use_llm: bool = True, kerne
     # 2) extract + verify signals (fail-closed)
     signals = extract_signals(corpus, kernel, runlog, prefer_llm=use_llm)
 
-    # 3) diagnose (A4)
-    company_name = _company_name(domain, {})
-    dx = diagnose(signals, kernel, company_name=company_name, use_llm=use_llm)
-
-    # 4) cost-of-problem (A5)
+    # 3) cost-of-problem (A5) — computed first so the diagnosis can cite ROI
     cost = estimate_cost(signals, kernel)
+
+    # 4) diagnose (A4) — consultant-grade, grounded in verified signals + cost
+    company_name = _company_name(domain, {})
+    dx = diagnose(signals, kernel, company_name=company_name, cost=cost, use_llm=use_llm)
 
     # 5) compose markdown
     md = _compose_markdown(domain, company_name, kernel, dx, cost, signals, list(corpus.keys()), runlog)
@@ -151,6 +151,35 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, signals, pages, ru
     lines.append("")
     lines.append(f"*Diagnosis confidence: {dx.confidence:.0%} · source: {dx.source}*")
     lines.append("")
+
+    if not dx.disqualified and dx.business_summary:
+        lines.append("## Consultant analysis")
+        lines.append("")
+        lines.append(f"**Business summary.** {dx.business_summary}")
+        lines.append("")
+        if dx.pain_points:
+            lines.append("**Pain points.**")
+            lines += [f"- {p}" for p in dx.pain_points]
+            lines.append("")
+        if dx.ai_opportunities:
+            lines.append("**AI opportunities.**")
+            lines += [f"- {p}" for p in dx.ai_opportunities]
+            lines.append("")
+        if dx.automation_opportunities:
+            lines.append("**Automation opportunities.**")
+            lines += [f"- {p}" for p in dx.automation_opportunities]
+            lines.append("")
+        lines.append(f"**Recommended project.** `{dx.recommended_project}` · "
+                     f"**Implementation complexity:** {dx.implementation_complexity}")
+        lines.append("")
+        lines.append(f"**Estimated ROI.** {dx.estimated_roi}")
+        lines.append("")
+        lines.append(f"**Outreach angle.** {dx.outreach_angle}")
+        lines.append("")
+        if dx.proposal_outline:
+            lines.append("**Proposal outline.**")
+            lines += [f"{i}. {p}" for i, p in enumerate(dx.proposal_outline, 1)]
+            lines.append("")
 
     lines.append("## Cost of the problem")
     lines.append("")

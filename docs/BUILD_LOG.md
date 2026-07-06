@@ -157,3 +157,20 @@ frontier ₹1.32 / ₹1000. Findings + fixes:
   so tests control keys via env vars only.
 
 Tests 53/53, ruff clean.
+
+## 2026-07-07 — Session 4: consultant-grade upgrade (goal: lead-gen platform)
+
+Operator set a broad "consultant-grade lead-gen platform" goal. Compliance boundary
+recorded (D8): automate compliant sources only; LinkedIn/G2/Capterra/Crunchbase/Reddit
+stay manual link-outs (SPEC §3.5 Never Build + ToS). Working through improvements:
+
+**Improvement #1 — consultant-grade diagnosis (A4).** `Diagnosis` expanded with
+business_summary, pain_points, ai_opportunities, automation_opportunities,
+estimated_roi (cites the A5 cost number), implementation_complexity, recommended_project,
+outreach_angle, proposal_outline (B2 preview). Deterministic-first (works offline),
+LLM-enriched (`gpt-5-mini`), every field grounded in verified signals only. Cost is now
+computed before diagnosis so ROI is quantified. Brief renders a "Consultant analysis"
+section. New diagnostician prompt (v2). Live-verified on plausible.io (ROI 8.1×,
+evidence-cited). +1 regression test. Benchmarks recorded in docs/BENCHMARKS.md.
+
+Tests 54/54, ruff clean.
