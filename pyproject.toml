@@ -1,0 +1,52 @@
+[project]
+name = "leadscout"
+version = "0.2.0"
+description = "LeadScout v2 — AI consulting intelligence platform (Proof & Trust engine)"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Hari" }]
+dependencies = [
+    "sqlalchemy>=2.0",
+    "httpx>=0.27",
+    "tenacity>=8.2",
+    "trafilatura>=1.8",
+    "beautifulsoup4>=4.12",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "typer>=0.12",
+    "rich>=13.7",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+# Primary UX per SPEC §4.1. Binary `leadscout`; subcommands: scout, brief, demo, draft, ...
+leadscout = "leadscout.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "respx>=0.21",       # httpx mocking — fixture-based tests, no live calls
+    "ruff>=0.5",
+]
+browser = [
+    "playwright>=1.44",  # B7 reserved: single polite fallback only
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["leadscout"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]  # long lines tolerated in prompts/strings
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

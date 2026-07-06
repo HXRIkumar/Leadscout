@@ -1,0 +1,80 @@
+# =============================================================================
+# A1 — Niche & Offer Kernel   (LeadScout v2, SPEC §3.1 / §5.1)
+# -----------------------------------------------------------------------------
+# The single source of truth for the entire platform. Every downstream artifact
+# (discovery filter, research brief, diagnosis, cost estimate, demo, outreach)
+# is a direct function of this file's sharpness. This is CONFIG, not code.
+#
+# Locked: 2026-07-06.
+# Re-tune ONLY from real outcomes (SPEC §2.1, the dotted "tunes" edge) — never on
+# a hunch mid-week. Changing the wedge problem invalidates the pattern library.
+# =============================================================================
+
+version: 1
+
+# --- Who ---------------------------------------------------------------------
+icp:
+  vertical: >-
+    B2B SaaS companies whose own product is NOT AI-native, running a growing
+    customer-facing support operation (a public help center and/or a support/CX
+    team) that is outpacing their small engineering team's bandwidth to build
+    self-serve deflection.
+  stage: "seed to series-a (post-raise)"
+  size: "15-80 employees"
+  # English-operating markets with defined compliance rules (compliance/region_rules.md).
+  # English-operating startups elsewhere are allowed; EU consent-only states excluded by default.
+  geography: [US, UK, CA, AU, IE, NZ, SG]
+  buyer: "Founder/CTO (economic buyer, owns the eng-bandwidth tradeoff); Head of Support/CX (champion)"
+
+# --- The ONE costed problem --------------------------------------------------
+problem:
+  name: >-
+    Repetitive customer-support ticket load: a growing volume of repeatable
+    how-to and troubleshooting questions answered manually by a small support
+    team, because engineering has no bandwidth to ship self-serve deflection.
+
+  # A5 cost-of-problem model. Numbers are defensible defaults, overridden per
+  # company whenever public evidence lets us infer a better value.
+  cost_logic:
+    primary:
+      formula: "annual_support_cost_at_risk = support_headcount * loaded_annual_cost_per_rep * deflectable_fraction"
+      defaults:
+        support_headcount: 3            # fallback when not inferable from public data
+        loaded_annual_cost_per_rep: 55000   # USD, blended loaded cost (salary + overhead)
+        deflectable_fraction: 0.35      # conservative: share of tickets that are repetitive & RAG-deflectable
+    # Used instead of `primary` when ticket volume is publicly stated.
+    alternate_when_ticket_volume_public:
+      formula: "monthly_tickets * 12 * fully_loaded_cost_per_ticket * deflectable_fraction"
+      fully_loaded_cost_per_ticket: 8   # USD, industry-blended cost to resolve one ticket
+
+  # What makes this problem LEGIBLE from public data (drives A2 filter + A3 research).
+  public_evidence_signals:
+    - "Public help center / knowledge base exists (article count, staleness, coverage gaps)"
+    - "Hiring for support / customer success / CX roles (careers page)"
+    - "Support-widget vendor detectable (Intercom, Zendesk, Gorgias, Help Scout, Front)"
+    - "Public complaints about slow/poor support (G2, Trustpilot, Reddit, community forum)"
+    - "Rapid customer/user growth language paired with a small team"
+    - "Community forum / Discourse with unanswered questions"
+    - "Product/changelog velocity outpacing documentation updates"
+
+# --- The offer, as numbers ---------------------------------------------------
+offer:
+  headline_number: "35% of repetitive support tickets deflected"
+  archetype: "rag_support_bot"          # maps to templates/demo_templates/rag_support_bot/
+  pilot:
+    price: "$2,500"
+    weeks: "3"
+    deliverable: >-
+      A working support-deflection assistant trained on their public help center
+      and docs, answering their real top-20 support questions, deployed to a
+      shareable test surface, with a measured deflection rate on those questions
+      and a production rollout plan.
+
+# --- Three sharp disqualifiers ----------------------------------------------
+disqualifiers:
+  - "Product is AI-native / the core product is an LLM app (competes with the buyer's own engineering skillset)"
+  - "No public customer-support surface to deflect (no help center, no support/CX hiring, no public support complaints)"
+  - "Agency / consultancy / dev-shop, OR >~120 employees / a visible in-house ML-platform team (builds internally, not a client)"
+
+# --- Proof (honest emptiness) ------------------------------------------------
+proof_assets: []   # empty is honest; Week 1 creates the first from a real brief + demo

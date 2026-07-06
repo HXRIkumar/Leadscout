@@ -1,0 +1,27 @@
+# Secrets & config
+.env
+.env.local
+
+# Data (git-ignored per SPEC §4.2) — local runtime artifacts, not source.
+# Ignore everything under data/ EXCEPT the proprietary pattern library (source of truth).
+data/*
+!data/pattern_library/
+*.sqlite
+*.sqlite3
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
