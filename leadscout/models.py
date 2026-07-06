@@ -78,6 +78,7 @@ class Signal(Base):
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
     recency_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     mapped_project: Mapped[str | None] = mapped_column(String, nullable=True)
+    verification: Mapped[str | None] = mapped_column(String, nullable=True)  # verbatim | reattributed
     extracted_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
     company: Mapped[Company] = relationship(back_populates="signals")

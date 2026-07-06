@@ -61,6 +61,13 @@ def test_cost_defaults_without_evidence():
     assert cost.inputs["support_headcount"] == 3
 
 
+def test_verified_signals_carry_verification_result():
+    # goal: every extracted fact includes a verification result
+    sigs = extract_signals(CORPUS, load_kernel(), prefer_llm=False)
+    assert sigs
+    assert all(s.verification in {"verbatim", "reattributed"} for s in sigs)
+
+
 def test_consultant_grade_fields_deterministic():
     sigs = extract_signals(CORPUS, load_kernel(), prefer_llm=False)
     cost = estimate_cost(sigs, load_kernel())

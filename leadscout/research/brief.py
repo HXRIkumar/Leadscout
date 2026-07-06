@@ -148,7 +148,7 @@ def _persist(domain, company_name, kernel, dx, cost, score, signals, results, br
             s.add(Signal(
                 domain=domain, signal_type=sig.signal_type, evidence_quote=sig.evidence_quote,
                 source_url=sig.source_url, confidence=sig.confidence,
-                mapped_project=sig.mapped_project, extracted_at=now,
+                mapped_project=sig.mapped_project, verification=sig.verification, extracted_at=now,
             ))
 
         # brief row
@@ -274,7 +274,8 @@ def _compose_markdown(domain, company_name, kernel, dx, cost, score, doc_quality
     lines.append("")
     if positives:
         for s in positives:
-            lines.append(f"- **{s.signal_type}** ({s.confidence:.0%}): “{s.evidence_quote}”")
+            v = f" · ✓ {s.verification}" if s.verification else ""
+            lines.append(f"- **{s.signal_type}** ({s.confidence:.0%}{v}): “{s.evidence_quote}”")
             lines.append(f"  <br>↳ source: <{s.source_url}>")
     else:
         lines.append("_No positive support-deflection signals passed verification._")

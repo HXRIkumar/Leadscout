@@ -82,6 +82,7 @@ class SignalCandidate:
     mapped_project: str | None = None
     recency_days: int | None = None
     is_anti_signal: bool = False
+    verification: str = ""            # set by verify_signals: "verbatim" | "reattributed"
     meta: dict = field(default_factory=dict)
 
 
@@ -240,6 +241,7 @@ def verify_signals(
             continue
         if vr.source_url and vr.source_url != c.source_url:
             c.source_url = vr.source_url
+        c.verification = "reattributed" if vr.reason == "reattributed" else "verbatim"
         verified.append(c)
         if runlog:
             runlog.signals_extracted += 1

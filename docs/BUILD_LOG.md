@@ -238,3 +238,9 @@ detection, scoring+rank, research link-outs, doc-quality, GitHub enrichment, sea
 discovery). Compliance boundary held (D8): no ToS-violating scrapers; restricted
 sources handled as manual link-outs. Remaining roadmap + honest blockers in
 NEXT_STEPS. Next best action: OPERATE to unlock outcome-gated C1/C2/C3.
+
+**Improvement #8 — explicit verification result per fact.**
+SignalCandidate + Signal gain a `verification` field ("verbatim" | "reattributed"),
+set by verify_signals and surfaced in the brief evidence lines ("✓ verbatim"). Closes
+the goal's extraction spec: every fact carries evidence quote + source URL + confidence
++ verification result. +1 test (69).
